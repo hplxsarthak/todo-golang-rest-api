@@ -60,6 +60,25 @@ func getTodo (context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, todo)
 }
 
+// Function to toggle the status
+func toggleTodoStatus (context *gin.Context) {
+	// get the id from the url by using param
+	id := context.Param("id")
+
+	// Pass that id to getTodoById function which then give the particular todo
+	todo,err := getTodoById(id)
+
+	if err != nil {
+		context.IndentedJSON(http.StatusNotFound, gin.H{"message" : "Todo not found"})
+		return
+	}
+
+	// Toggle the status
+	todo.Completed = !todo.Completed
+
+	context.IndentedJSON(http.StatusOK, todo)
+}
+
 // Function to get that id item only for which we have provided id in the get request
 func getTodoById (id string) (*todo, error) {
 	for i,t := range todos{
@@ -79,11 +98,14 @@ func main() {
 	// Get the data from the server
 	router.GET("/todos", getTodos)
 
-	// Add the data to the server
-	router.POST("/todos/add", addTodos)
-
 	// Get the specific todo by id
 	router.GET("/todos/:id", getTodo)
+
+	// change the status of completed using patch
+	router.PATCH("/todos/:id", toggleTodoStatus)
+
+	// Add the data to the server
+	router.POST("/todos/add", addTodos)
 
 	// Run the server on port:9090
 	router.Run("localhost:9090")
