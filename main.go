@@ -24,12 +24,33 @@ func getTodos(context *gin.Context){
 	context.IndentedJSON(http.StatusOK, todos)
 }
 
+// Function to send data to the server which is in json and convert into 
+// golang array format and append it
+func addTodos(context *gin.Context){
+	var newTodo todo
+
+	// convert json format to todo array and check is it matching or not
+	if err := context.BindJSON(&newTodo); err != nil {
+		return
+	}
+
+	// Append in todos array
+	todos = append(todos, newTodo)
+
+	// Send the response as the new json object with status created
+	context.IndentedJSON(http.StatusCreated, newTodo)
+
+}
+
 func main() {
 	// Create a server
 	router := gin.Default()
 
 	// Get the data from the server
 	router.GET("/todos", getTodos)
+
+	// Add the data to the server
+	router.POST("/todos/add", addTodos)
 
 	// Run the server on port:9090
 	router.Run("localhost:9090")
