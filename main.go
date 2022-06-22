@@ -1,7 +1,9 @@
 package main
 
-import(
+import (
+	"errors"
 	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -42,6 +44,34 @@ func addTodos(context *gin.Context){
 
 }
 
+// Function to get the specific todo
+func getTodo (context *gin.Context) {
+	// get the id from the url by using param
+	id := context.Param("id")
+
+	// Pass that id to getTodoById function which then give the particular todo
+	todo,err := getTodoById(id)
+
+	if err != nil {
+		context.IndentedJSON(http.StatusNotFound, gin.H{"message" : "Todo not found"})
+		return
+	}
+
+	context.IndentedJSON(http.StatusOK, todo)
+}
+
+// Function to get that id item only for which we have provided id in the get request
+func getTodoById (id string) (*todo, error) {
+	for i,t := range todos{
+		// if id matches then return error as nil and the found todo
+		if t.ID == id {
+			return &todos[i], nil
+		}
+	}
+	// if error then return todo as nil
+	return nil, errors.New("todo not found")
+}
+
 func main() {
 	// Create a server
 	router := gin.Default()
@@ -51,6 +81,9 @@ func main() {
 
 	// Add the data to the server
 	router.POST("/todos/add", addTodos)
+
+	// Get the specific todo by id
+	router.GET("/todos/:id", getTodo)
 
 	// Run the server on port:9090
 	router.Run("localhost:9090")
